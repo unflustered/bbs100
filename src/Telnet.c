@@ -20,6 +20,7 @@
 #include "debug.h"
 #include "cstring.h"
 #include "bufprintf.h"
+#include "ConnResolv.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -206,6 +207,8 @@ char buf[MAX_TELNETBUF];
 
 			t->in_sub = 1;
 			t->in_sub_buf[t->in_sub] = 0;
+			t->in_val = 0;
+			t->in_val_buf[t->in_val] = 0;
 			Return -1;
 
 		case TS_NEW_ENVIRON_IS:
@@ -215,6 +218,8 @@ char buf[MAX_TELNETBUF];
 				case 3:
 					t->in_sub = 1;
 					t->in_sub_buf[t->in_sub] = 0;
+					t->in_val = 0;
+					t->in_val_buf[t->in_val] = 0;
 					t->state = TS_NEW_ENVIRON_VAR;
 					break;
 
@@ -254,6 +259,15 @@ char buf[MAX_TELNETBUF];
 				else
 					t->state = TS_NEW_ENVIRON_VAR;
 
+				if (!strcmp(t->in_sub_buf+1, "ADDR")) {		/* entered remote address via wrapper */
+					t->in_val_buf[t->in_val] = 0;
+					set_Conn_ipnum(conn, t->in_val_buf);
+					dns_gethostname(conn->ipnum);
+					t->in_sub = 1;
+					t->in_sub_buf[t->in_sub] = 0;
+					Return -1;
+				}
+
 				if (!strcmp(t->in_sub_buf+1, "USER")) {		/* entered a user name */
 					t->in_sub = 1;
 					t->in_sub_buf[t->in_sub] = 0;
@@ -262,6 +276,11 @@ char buf[MAX_TELNETBUF];
 				t->in_sub = 1;
 				t->in_sub_buf[t->in_sub] = 0;
 			} else {
+/* setting remote address, buffer into value buffer */
+				if (!strcmp(t->in_sub_buf+1, "ADDR") && t->in_val < MAX_VAL_BUF - 2) {
+					t->in_val_buf[t->in_val++] = c;
+					Return -1;
+				}
 /* setting username, let through */
 				if (!strcmp(t->in_sub_buf+1, "USER")) {
 					Return c;

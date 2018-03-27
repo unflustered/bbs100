@@ -24,6 +24,11 @@
 	it only cares for NAWS bytes and the "USER" environment variable
 */
 #define MAX_SUB_BUF			8
+/*
+    the value buffer is slightly larger, as it will be used to buffer
+    environment variables besides user (e.g. remote address)
+*/
+#define MAX_VAL_BUF         64
 
 #define MAX_TERM			500
 
@@ -40,9 +45,10 @@
 #define TS_NEW_ENVIRON_VAL	9
 
 typedef struct {
-	int state, in_sub;
+	int state, in_sub, in_val;
 	int term_width, term_height;
 	char in_sub_buf[MAX_SUB_BUF];
+	char in_val_buf[MAX_VAL_BUF];
 } Telnet;
 
 Telnet *new_Telnet(void);
