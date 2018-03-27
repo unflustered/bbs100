@@ -20,6 +20,7 @@
 #include "Conn.h"
 #include "Memory.h"
 #include "log.h"
+#include "cstring.h"
 #include "cstrerror.h"
 
 #include <stdio.h>
@@ -220,6 +221,19 @@ char buf[MAX_PATHLEN], errbuf[MAX_LINE];
 
 	rewind_StringIO(conn->input);
 	return err;
+}
+
+/*
+	reassign the ipnum of a Conn for telnet-wrapping services (e.g. ssh)
+	will additionally copy ipnum into hostname, but will not trigger the
+	hostname resolution with ConnResolv.
+*/
+void set_Conn_ipnum(Conn *conn, char *ipnum) {
+	log_debug("set_Conn_ipnum(): setting ipnum and hostname to %s", ipnum);
+	Free(conn->ipnum);
+	conn->ipnum = cstrdup(ipnum);
+	Free(conn->hostname);
+	conn->hostname = cstrdup(ipnum);
 }
 
 /*

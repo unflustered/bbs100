@@ -92,6 +92,7 @@ int putc_Conn(Conn *, char);
 int put_Conn(Conn *, char *);
 int flush_Conn(Conn *);
 int input_Conn(Conn *);
+void set_Conn_ipnum(Conn *, char *);
 
 void close_Conn(Conn *);
 void loop_Conn(Conn *, unsigned long);
